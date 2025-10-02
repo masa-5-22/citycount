@@ -1,0 +1,336 @@
+:root {
+  color-scheme: light;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --border: #d4dde5;
+  --text: #1a2f38;
+  --accent: #1f7a8c;
+  --accent-strong: #136f7c;
+  --accent-soft: rgba(31, 122, 140, 0.14);
+  --neutral-fill: #dbe7ea;
+  --radius: 14px;
+  --shadow: 0 12px 32px rgba(16, 30, 45, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.page-header {
+  padding: 32px clamp(16px, 5vw, 64px);
+  background: linear-gradient(135deg, var(--accent), #43b3a8);
+  color: #fff;
+  box-shadow: var(--shadow);
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.page-header h1 {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.scoring-guide {
+  margin: 32px clamp(16px, 5vw, 64px);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.scoring-guide table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scoring-guide th,
+.scoring-guide td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.primary-tabs {
+  display: flex;
+  gap: 12px;
+  padding: 0 clamp(16px, 5vw, 64px) 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.primary-tabs button {
+  border: none;
+  background: transparent;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.6);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.primary-tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(31, 122, 140, 0.25);
+}
+
+main {
+  padding: 32px clamp(16px, 5vw, 64px) 64px;
+  display: grid;
+  gap: 32px;
+}
+
+.tab-panel {
+  display: none;
+  flex-direction: column;
+  gap: 24px;
+  background: transparent;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+.panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.panel-actions button,
+.municipality-controls button {
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.panel-actions button:hover,
+.municipality-controls button:hover {
+  transform: translateY(-1px);
+  background: var(--accent-strong);
+  box-shadow: 0 10px 20px rgba(19, 111, 124, 0.2);
+}
+
+.panel-body {
+  display: grid;
+  grid-template-columns: minmax(0, 60%) minmax(0, 40%);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.panel-body.vertical {
+  grid-template-columns: 1fr;
+}
+
+.map-container,
+.list-container {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-container {
+  padding: 0;
+  overflow: hidden;
+}
+
+.map {
+  width: 100%;
+  min-height: 360px;
+  height: 100%;
+}
+
+.list-wrapper {
+  overflow: auto;
+  max-height: 420px;
+}
+
+.list-container table,
+.municipality-controls + .list-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.list-container th,
+.list-container td,
+.municipality-controls + .list-wrapper th,
+.municipality-controls + .list-wrapper td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-container tr:hover,
+.municipality-controls + .list-wrapper tr:hover {
+  background: var(--accent-soft);
+}
+
+.score-empty {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.score-value {
+  font-weight: 600;
+}
+
+input[type="search"],
+select,
+input[type="number"],
+textarea {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  font-size: 14px;
+  background: #fff;
+  width: 100%;
+}
+
+.municipality-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.municipality-controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 6px;
+  min-width: 160px;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+}
+
+.map-region {
+  cursor: pointer;
+  stroke: rgba(15, 36, 40, 0.6);
+  stroke-width: 1.2;
+  fill: var(--neutral-fill);
+  transition: fill 0.2s ease, transform 0.2s ease;
+}
+
+.map-region[data-score] {
+  fill: var(--region-color, var(--neutral-fill));
+}
+
+.map-region:hover,
+.map-region:focus {
+  outline: none;
+  transform: translateY(-2px);
+  stroke-width: 2;
+}
+
+.score-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(480px, 90vw);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.score-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.score-summary .recommended {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--accent-strong);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-actions button {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-actions button[data-action="cancel"] {
+  background: rgba(26, 47, 56, 0.08);
+  color: var(--text);
+}
+
+.form-actions button:not([data-action="cancel"]):hover {
+  background: var(--accent-strong);
+  box-shadow: 0 10px 20px rgba(19, 111, 124, 0.22);
+}
+
+#scoreDialog::backdrop {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+@media (max-width: 960px) {
+  .panel-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-header {
+    padding: 24px;
+  }
+
+  .scoring-guide {
+    padding: 16px;
+  }
+
+  .panel-actions button,
+  .municipality-controls button {
+    width: 100%;
+  }
+
+  .municipality-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
