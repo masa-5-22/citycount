@@ -36,6 +36,7 @@
         <tr><td>0</td><td>未踏：上記いずれにも該当せず</td></tr>
       </tbody>
     </table>
+    <div class="score-legend" id="scoreLegend" aria-label="スコア凡例"></div>
   </section>
 
   <nav class="primary-tabs" role="tablist">
@@ -165,10 +166,17 @@
         </label>
       </div>
       <div class="score-summary">
-        <div class="recommended">推奨スコア：<span data-field="recommended">0</span></div>
+        <div class="recommended">
+          推奨スコア：
+          <span class="score-chip score-chip-compact" data-field="recommended-badge" data-score="0">
+            <span class="score-chip-value">0</span>
+            <span class="score-chip-label">未踏</span>
+          </span>
+        </div>
         <label>最終スコア
           <input type="number" name="score" min="0" max="10" step="1" required />
         </label>
+        <p class="score-hint" data-field="score-hint">カテゴリ：未設定</p>
         <label>メモ
           <textarea name="notes" rows="3" placeholder="滞在内容の補足"></textarea>
         </label>

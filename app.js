@@ -13,6 +13,26 @@ const SCORE_PALETTE = [
   '#1a4c47'
 ];
 
+const SCORE_DEFINITIONS = [
+  { score: 10, label: '居住', description: 'yearsLived ≥ 2（10 点は yearsLived ≥ 2 のみ）' },
+  { score: 9, label: '長期滞在', description: '3 ≤ monthsStayed < 24' },
+  { score: 8, label: '中期滞在', description: '2 ≤ weeksStayed < 12' },
+  { score: 7, label: '反復宿泊', description: 'totalNights ≥ 3' },
+  { score: 6, label: '宿泊', description: 'totalNights ≥ 1' },
+  {
+    score: 5,
+    label: '反復訪問（日帰り）',
+    description: 'dayTripCount ≥ 2 かつ dayTripMinPerVisitHours ≥ 2 または dayTripTotalHours ≥ 6'
+  },
+  { score: 4, label: '濃厚訪問（日帰り）', description: 'maxSingleDayHours ≥ 4' },
+  { score: 3, label: '訪問（日帰り）', description: '1 ≤ maxSingleDayHours < 4' },
+  { score: 2, label: '立ち寄り（短時間）', description: '短時間（<1h）または駅/空港/SA/PA のみ' },
+  { score: 1, label: '通過（未下車）', description: '鉄道/自動車/船で通過のみ（上空通過は除外）' },
+  { score: 0, label: '未踏', description: '上記いずれにも該当せず' }
+];
+
+const SCORE_DEFINITION_MAP = new Map(SCORE_DEFINITIONS.map((item) => [item.score, item]));
+
 const MAP_STYLE_URL = 'https://demotiles.maplibre.org/style.json';
 const PREFECTURE_GEOJSON_URL =
   'https://raw.githubusercontent.com/gsi-cyberjapan/geojson/master/prefectures.geojson';
@@ -25,6 +45,7 @@ const municipalityMapContainer = document.getElementById('municipalityMap');
 const worldListBody = document.getElementById('worldList');
 const prefectureListBody = document.getElementById('prefectureList');
 const municipalityListBody = document.getElementById('municipalityList');
+const scoreLegendContainer = document.getElementById('scoreLegend');
 
 const regionDisplayNames = (() => {
   try {
@@ -62,6 +83,7 @@ const templates = {
 
 const scoreDialog = document.getElementById('scoreDialog');
 
+renderScoreLegend();
 initTabs();
 initApp();
 
@@ -130,6 +152,90 @@ async function fetchJson(path) {
     throw new Error(`Failed to fetch ${path}`);
   }
   return response.json();
+}
+
+function escapeAttribute(value) {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function getScoreDefinition(score) {
+  if (!Number.isFinite(score)) {
+    return null;
+  }
+  return SCORE_DEFINITION_MAP.get(Number(score)) || null;
+}
+
+function buildScoreBadgeHTML(score, { compact = false } = {}) {
+  if (!Number.isFinite(score)) {
+    return '<span class="score-empty">—</span>';
+  }
+  const definition = getScoreDefinition(score);
+  const label = definition ? definition.label : '未設定';
+  const description = definition?.description || '';
+  const title = description ? `${label}｜${description}` : label;
+  const classes = ['score-chip'];
+  if (compact) {
+    classes.push('score-chip-compact');
+  }
+  const color = getScoreColor(score);
+  return `<span class="${classes.join(' ')}" data-score="${score}" style="--chip-color:${color}" title="${escapeAttribute(title)}"><span class="score-chip-value">${score}</span><span class="score-chip-label">${label}</span></span>`;
+}
+
+function renderScoreBadgeElement(element, score, { compact = false } = {}) {
+  if (!element) return;
+  element.classList.add('score-chip');
+  element.classList.toggle('score-chip-compact', compact);
+  if (!Number.isFinite(score)) {
+    element.classList.add('score-chip-empty');
+    element.style.removeProperty('--chip-color');
+    element.textContent = '未設定';
+    element.removeAttribute('title');
+    element.dataset.score = '';
+    return;
+  }
+  const definition = getScoreDefinition(score);
+  const label = definition ? definition.label : '未設定';
+  element.classList.remove('score-chip-empty');
+  element.style.setProperty('--chip-color', getScoreColor(score));
+  element.innerHTML = `<span class="score-chip-value">${score}</span><span class="score-chip-label">${label}</span>`;
+  element.dataset.score = String(score);
+  if (definition?.description) {
+    element.setAttribute('title', `${label}｜${definition.description}`);
+  } else {
+    element.setAttribute('title', label);
+  }
+}
+
+function formatScoreHintText(score, { explicit = false } = {}) {
+  if (!Number.isFinite(score)) {
+    return 'カテゴリ：未設定';
+  }
+  const definition = getScoreDefinition(score);
+  const label = definition ? definition.label : '未設定';
+  const suffix = explicit ? '' : '（推奨）';
+  return `カテゴリ：${label}（${score} 点${suffix}）`;
+}
+
+function renderScoreLegend() {
+  if (!scoreLegendContainer) return;
+  scoreLegendContainer.innerHTML = '';
+  scoreLegendContainer.setAttribute('role', 'list');
+  const fragment = document.createDocumentFragment();
+  SCORE_DEFINITIONS.slice()
+    .sort((a, b) => b.score - a.score)
+    .forEach((definition) => {
+      const badge = document.createElement('span');
+      badge.className = 'score-chip score-chip-compact';
+      badge.setAttribute('role', 'listitem');
+      renderScoreBadgeElement(badge, definition.score, { compact: true });
+      fragment.appendChild(badge);
+    });
+  scoreLegendContainer.appendChild(fragment);
 }
 
 function computeRecommendedScore(metrics) {
@@ -824,7 +930,7 @@ function formatScoreCell(dataset, id) {
   if (!entry || typeof entry.score !== 'number') {
     return '<span class="score-empty">—</span>';
   }
-  return `<span class="score-value" data-score="${entry.score}">${entry.score}</span>`;
+  return buildScoreBadgeHTML(entry.score);
 }
 
 function openScoreDialog(dataset, id) {
@@ -836,7 +942,8 @@ function openScoreDialog(dataset, id) {
   scoreDialog.innerHTML = '';
   const fragment = templates.score.content.cloneNode(true);
   const form = fragment.querySelector('form');
-  const recommendedField = fragment.querySelector('[data-field="recommended"]');
+  const recommendedBadge = fragment.querySelector('[data-field="recommended-badge"]');
+  const scoreHintField = fragment.querySelector('[data-field="score-hint"]');
   const existing = state[dataset][id] || {};
 
   form.querySelector('input[name="yearsLived"]').value = existing.metrics?.yearsLived ?? '';
@@ -851,22 +958,49 @@ function openScoreDialog(dataset, id) {
   form.querySelector('input[name="transitOnly"]').checked = Boolean(existing.metrics?.transitOnly);
   form.querySelector('textarea[name="notes"]').value = existing.notes ?? '';
   const defaultScore = typeof existing.score === 'number' ? existing.score : '';
-  form.querySelector('input[name="score"]').value = defaultScore;
+  const scoreInput = form.querySelector('input[name="score"]');
+  scoreInput.value = defaultScore;
 
-  const updateRecommended = () => {
-    const metrics = readMetricsFromForm(form);
-    const recommended = computeRecommendedScore(metrics);
-    recommendedField.textContent = recommended;
-    if (!form.querySelector('input[name="score"]').value) {
-      form.querySelector('input[name="score"]').value = recommended;
+  let scoreWasEdited = defaultScore !== '';
+  let lastRecommended = 0;
+
+  const updateScoreHint = () => {
+    if (!scoreHintField) return;
+    if (scoreWasEdited) {
+      const manualValue = Number(scoreInput.value);
+      if (Number.isInteger(manualValue)) {
+        scoreHintField.textContent = formatScoreHintText(manualValue, { explicit: true });
+      } else {
+        scoreHintField.textContent = 'カテゴリ：未設定';
+      }
+    } else {
+      scoreHintField.textContent = formatScoreHintText(lastRecommended);
     }
   };
 
-  form.addEventListener('input', (event) => {
-    if (event.target.name !== 'score' && event.target.name !== 'notes') {
-      updateRecommended();
+  const updateRecommended = () => {
+    const metrics = readMetricsFromForm(form);
+    lastRecommended = computeRecommendedScore(metrics);
+    renderScoreBadgeElement(recommendedBadge, lastRecommended, { compact: true });
+    if (!scoreWasEdited) {
+      scoreInput.value = lastRecommended;
     }
+    updateScoreHint();
+  };
+
+  form.addEventListener('input', (event) => {
+    if (event.target.name === 'notes' || event.target.name === 'score') {
+      return;
+    }
+    updateRecommended();
   });
+
+  scoreInput.addEventListener('input', () => {
+    scoreWasEdited = scoreInput.value !== '';
+    updateScoreHint();
+  });
+
+  updateRecommended();
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
