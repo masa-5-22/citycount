@@ -17,26 +17,37 @@
   </header>
 
   <section class="scoring-guide">
-    <h2>スコアリング要件（旅行接触度）</h2>
-    <table>
-      <thead>
-        <tr><th>点数</th><th>判定基準</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>10</td><td>居住：yearsLived ≥ 2（10 点は yearsLived ≥ 2 のみ）</td></tr>
-        <tr><td>9</td><td>長期滞在：3 ≤ monthsStayed &lt; 24</td></tr>
-        <tr><td>8</td><td>中期滞在：2 ≤ weeksStayed &lt; 12</td></tr>
-        <tr><td>7</td><td>反復宿泊：totalNights ≥ 3</td></tr>
-        <tr><td>6</td><td>宿泊：totalNights ≥ 1</td></tr>
-        <tr><td>5</td><td>反復訪問（日帰り）：dayTripCount ≥ 2 かつ dayTripMinPerVisitHours ≥ 2 または dayTripTotalHours ≥ 6</td></tr>
-        <tr><td>4</td><td>濃厚訪問（日帰り）：maxSingleDayHours ≥ 4</td></tr>
-        <tr><td>3</td><td>訪問（日帰り）：1 ≤ maxSingleDayHours &lt; 4</td></tr>
-        <tr><td>2</td><td>立ち寄り（短時間）：短時間（&lt; 1h）または駅/空港/SA/PA のみ</td></tr>
-        <tr><td>1</td><td>通過（未下車）：鉄道/自動車/船で通過のみ（上空通過は除外）</td></tr>
-        <tr><td>0</td><td>未踏：上記いずれにも該当せず</td></tr>
-      </tbody>
-    </table>
-    <div class="score-legend" id="scoreLegend" aria-label="スコア凡例"></div>
+    <div class="scoring-guide-header">
+      <h2>スコアリング要件（旅行接触度）</h2>
+      <div class="scoring-guide-tabs" role="tablist">
+        <button type="button" class="active" data-score-tab="summary" role="tab" aria-controls="scoreTabSummary" aria-selected="true">概要</button>
+        <button type="button" data-score-tab="detail" role="tab" aria-controls="scoreTabDetail" aria-selected="false">詳細</button>
+      </div>
+    </div>
+    <div class="scoring-guide-pane active" id="scoreTabSummary" data-score-pane="summary" role="tabpanel">
+      <div class="score-quick-grid" id="scoreQuickSummary" aria-label="スコア概要"></div>
+      <div class="score-legend" id="scoreLegend" aria-label="スコア凡例"></div>
+    </div>
+    <div class="scoring-guide-pane" id="scoreTabDetail" data-score-pane="detail" role="tabpanel" aria-hidden="true">
+      <table>
+        <thead>
+          <tr><th>点数</th><th>判定基準</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>10</td><td>居住：yearsLived ≥ 2（10 点は yearsLived ≥ 2 のみ）</td></tr>
+          <tr><td>9</td><td>長期滞在：3 ≤ monthsStayed &lt; 24</td></tr>
+          <tr><td>8</td><td>中期滞在：2 ≤ weeksStayed &lt; 12</td></tr>
+          <tr><td>7</td><td>反復宿泊：totalNights ≥ 3</td></tr>
+          <tr><td>6</td><td>宿泊：totalNights ≥ 1</td></tr>
+          <tr><td>5</td><td>反復訪問（日帰り）：dayTripCount ≥ 2 かつ dayTripMinPerVisitHours ≥ 2 または dayTripTotalHours ≥ 6</td></tr>
+          <tr><td>4</td><td>濃厚訪問（日帰り）：maxSingleDayHours ≥ 4</td></tr>
+          <tr><td>3</td><td>訪問（日帰り）：1 ≤ maxSingleDayHours &lt; 4</td></tr>
+          <tr><td>2</td><td>立ち寄り（短時間）：短時間（&lt; 1h）または駅/空港/SA/PA のみ</td></tr>
+          <tr><td>1</td><td>通過（未下車）：鉄道/自動車/船で通過のみ（上空通過は除外）</td></tr>
+          <tr><td>0</td><td>未踏：上記いずれにも該当せず</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <nav class="primary-tabs" role="tablist">
@@ -70,6 +81,16 @@
           </div>
         </div>
       </div>
+      <div class="totals-card">
+        <h3>地域別合計点</h3>
+        <table class="totals-table">
+          <thead>
+            <tr><th>地域</th><th>合計点</th><th>入力件数</th></tr>
+          </thead>
+          <tbody id="worldTotals"></tbody>
+          <tfoot id="worldTotalsFoot"></tfoot>
+        </table>
+      </div>
     </section>
 
     <section id="prefectures" class="tab-panel" role="tabpanel">
@@ -95,6 +116,16 @@
             </table>
           </div>
         </div>
+      </div>
+      <div class="totals-card">
+        <h3>地方別合計点</h3>
+        <table class="totals-table">
+          <thead>
+            <tr><th>地方</th><th>合計点</th><th>入力件数</th></tr>
+          </thead>
+          <tbody id="prefectureTotals"></tbody>
+          <tfoot id="prefectureTotalsFoot"></tfoot>
+        </table>
       </div>
     </section>
 

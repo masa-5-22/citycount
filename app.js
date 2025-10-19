@@ -33,6 +33,26 @@ const SCORE_DEFINITIONS = [
 
 const SCORE_DEFINITION_MAP = new Map(SCORE_DEFINITIONS.map((item) => [item.score, item]));
 
+const WORLD_REGION_ORDER = [
+  'アジア',
+  '東南アジア',
+  '中東・北アフリカ',
+  'ヨーロッパ',
+  '北アメリカ',
+  '北米',
+  '中米・南米',
+  'アフリカ',
+  'サハラ以南アフリカ',
+  'オセアニア',
+  'インド洋地域',
+  '大西洋地域',
+  'その他'
+];
+
+const PREFECTURE_REGION_ORDER = ['北海道', '北海道・東北', '関東', '中部', '近畿', '中国', '四国', '九州・沖縄'];
+
+const numberFormatter = new Intl.NumberFormat('ja-JP');
+
 const MAP_STYLE_URL = 'https://demotiles.maplibre.org/style.json';
 const PREFECTURE_GEOJSON_URL =
   'https://raw.githubusercontent.com/gsi-cyberjapan/geojson/master/prefectures.geojson';
@@ -45,7 +65,12 @@ const municipalityMapContainer = document.getElementById('municipalityMap');
 const worldListBody = document.getElementById('worldList');
 const prefectureListBody = document.getElementById('prefectureList');
 const municipalityListBody = document.getElementById('municipalityList');
+const scoreQuickSummaryContainer = document.getElementById('scoreQuickSummary');
 const scoreLegendContainer = document.getElementById('scoreLegend');
+const worldTotalsBody = document.getElementById('worldTotals');
+const worldTotalsFoot = document.getElementById('worldTotalsFoot');
+const prefectureTotalsBody = document.getElementById('prefectureTotals');
+const prefectureTotalsFoot = document.getElementById('prefectureTotalsFoot');
 
 const regionDisplayNames = (() => {
   try {
@@ -83,7 +108,9 @@ const templates = {
 
 const scoreDialog = document.getElementById('scoreDialog');
 
+renderScoreQuickSummary();
 renderScoreLegend();
+initScoreGuideTabs();
 initTabs();
 initApp();
 
@@ -101,6 +128,32 @@ async function initApp() {
   } catch (error) {
     console.error('初期化に失敗しました', error);
   }
+}
+
+function initScoreGuideTabs() {
+  const buttons = document.querySelectorAll('[data-score-tab]');
+  const panes = document.querySelectorAll('[data-score-pane]');
+  if (!buttons.length || !panes.length) {
+    return;
+  }
+  panes.forEach((pane) => {
+    pane.setAttribute('aria-hidden', pane.classList.contains('active') ? 'false' : 'true');
+  });
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.scoreTab;
+      buttons.forEach((btn) => {
+        const isActive = btn === button;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      panes.forEach((pane) => {
+        const isActive = pane.dataset.scorePane === target;
+        pane.classList.toggle('active', isActive);
+        pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+    });
+  });
 }
 
 function initTabs() {
@@ -266,6 +319,23 @@ function formatScoreHintText(score, { explicit = false } = {}) {
   return `カテゴリ：${label}（${score} 点${suffix}）`;
 }
 
+function renderScoreQuickSummary() {
+  if (!scoreQuickSummaryContainer) return;
+  const items = SCORE_DEFINITIONS.slice()
+    .sort((a, b) => b.score - a.score)
+    .map((definition) => {
+      const badge = buildScoreBadgeHTML(definition.score, { compact: true });
+      const label = definition.label;
+      const description = definition.description;
+      return `<div class="score-quick-item">
+        ${badge}
+        <span class="score-quick-label">${label}</span>
+        <span class="score-quick-desc">${description}</span>
+      </div>`;
+    });
+  scoreQuickSummaryContainer.innerHTML = items.join('');
+}
+
 function renderScoreLegend() {
   if (!scoreLegendContainer) return;
   scoreLegendContainer.innerHTML = '';
@@ -326,6 +396,13 @@ function getScoreColor(score) {
     return SCORE_PALETTE[idx];
   }
   return '#dbe7ea';
+}
+
+function formatInteger(value) {
+  if (!Number.isFinite(value)) {
+    return '0';
+  }
+  return numberFormatter.format(Math.round(value));
 }
 
 async function fetchGeoJson(url) {
@@ -449,6 +526,9 @@ function initWorldMap() {
     attributionControl: true
   });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+  map.scrollZoom.enable();
+  map.doubleClickZoom.enable();
+  map.touchZoomRotate.enable();
   map.on('load', () => {
     map.fitBounds(
       [
@@ -763,6 +843,7 @@ function bootstrapWorld(countries) {
   });
   initWorldMap();
   renderWorldList();
+  renderWorldTotals();
   setupFilter('worldFilter', renderWorldList);
 }
 
@@ -797,6 +878,17 @@ function renderWorldList() {
   });
 }
 
+function renderWorldTotals() {
+  renderRegionTotals({
+    dataset: 'world',
+    bodyElement: worldTotalsBody,
+    footElement: worldTotalsFoot,
+    order: WORLD_REGION_ORDER,
+    getRegion: (info) => info.region || 'その他',
+    fallbackLabel: 'その他'
+  });
+}
+
 async function bootstrapPrefectures(prefectures) {
   prefectures.forEach((pref) => metadata.prefectures.set(pref.code, pref));
   try {
@@ -805,6 +897,7 @@ async function bootstrapPrefectures(prefectures) {
     console.error('都道府県マップの初期化に失敗しました', error);
   }
   renderPrefectureList();
+  renderPrefectureTotals();
   setupFilter('prefectureFilter', renderPrefectureList);
 }
 
@@ -838,6 +931,71 @@ function renderPrefectureList() {
     });
     prefectureListBody.appendChild(row);
   });
+}
+
+function renderPrefectureTotals() {
+  renderRegionTotals({
+    dataset: 'prefectures',
+    bodyElement: prefectureTotalsBody,
+    footElement: prefectureTotalsFoot,
+    order: PREFECTURE_REGION_ORDER,
+    getRegion: (info) => info.region || 'その他',
+    fallbackLabel: 'その他'
+  });
+}
+
+function renderRegionTotals({ dataset, bodyElement, footElement, order = [], getRegion, fallbackLabel = '未分類' }) {
+  if (!bodyElement || !metadata[dataset]) {
+    return;
+  }
+  const totals = new Map();
+  metadata[dataset].forEach((info, id) => {
+    const regionName = (typeof getRegion === 'function' ? getRegion(info, id) : info.region) || fallbackLabel;
+    if (!totals.has(regionName)) {
+      totals.set(regionName, { name: regionName, total: 0, count: 0 });
+    }
+    const entry = state[dataset][id];
+    if (entry && Number.isFinite(entry.score)) {
+      const bucket = totals.get(regionName);
+      bucket.total += entry.score;
+      bucket.count += 1;
+    }
+  });
+
+  const rows = Array.from(totals.values());
+  if (!rows.length) {
+    bodyElement.innerHTML = '<tr><td colspan="3">データがありません</td></tr>';
+    if (footElement) {
+      footElement.innerHTML = '';
+    }
+    return;
+  }
+
+  if (Array.isArray(order) && order.length) {
+    const orderMap = new Map(order.map((name, index) => [name, index]));
+    rows.sort((a, b) => {
+      const aIdx = orderMap.has(a.name) ? orderMap.get(a.name) : Number.MAX_SAFE_INTEGER;
+      const bIdx = orderMap.has(b.name) ? orderMap.get(b.name) : Number.MAX_SAFE_INTEGER;
+      if (aIdx !== bIdx) return aIdx - bIdx;
+      if (b.total !== a.total) return b.total - a.total;
+      return a.name.localeCompare(b.name, 'ja');
+    });
+  } else {
+    rows.sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      return a.name.localeCompare(b.name, 'ja');
+    });
+  }
+
+  bodyElement.innerHTML = rows
+    .map((row) => `<tr><td>${row.name}</td><td>${formatInteger(row.total)}</td><td>${formatInteger(row.count)}</td></tr>`)
+    .join('');
+
+  if (footElement) {
+    const totalSum = rows.reduce((acc, row) => acc + row.total, 0);
+    const totalCount = rows.reduce((acc, row) => acc + row.count, 0);
+    footElement.innerHTML = `<tr><td>合計</td><td>${formatInteger(totalSum)}</td><td>${formatInteger(totalCount)}</td></tr>`;
+  }
 }
 
 async function bootstrapMunicipalities(initialList) {
@@ -1136,10 +1294,12 @@ function applyStateChange(dataset, id) {
     case 'world':
       updateWorldChoropleth();
       renderWorldList();
+      renderWorldTotals();
       break;
     case 'prefectures':
       updatePrefectureChoropleth();
       renderPrefectureList();
+      renderPrefectureTotals();
       break;
     case 'municipalities':
       updateMunicipalityLayers();
@@ -1177,9 +1337,11 @@ function resetDataset(dataset) {
   if (dataset === 'world') {
     updateWorldChoropleth();
     renderWorldList();
+    renderWorldTotals();
   } else if (dataset === 'prefectures') {
     updatePrefectureChoropleth();
     renderPrefectureList();
+    renderPrefectureTotals();
   } else if (dataset === 'municipalities') {
     updateMunicipalityLayers();
     renderMunicipalityList();
