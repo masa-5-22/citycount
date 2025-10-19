@@ -21,6 +21,32 @@
 5. 右上の「CSV エクスポート」で現在のスコアをダウンロードできます。
 6. 市区町村を追加する場合は地図上をクリックするか、CSV/JSON をインポートしてください（クリック時は最寄りポリゴンから自治体を推定します）。
 
+## 公開方法（HP・アプリ化への第一歩）
+
+本プロジェクトは完全な静的アプリケーションとして動作します。`index.html`・`styles.css`・`app.js` と `data/` 以下の GeoJSON を同じディレクトリに置くだけで完結するため、以下のような方法で簡単に公開できます。
+
+### ローカルでの確認
+
+- `index.html` を直接ブラウザで開く（最も手軽な方法）。
+- もしくは `python -m http.server 8000` などの簡易サーバーを立ち上げ、`http://localhost:8000` にアクセスすると、ファイル構成を変えずに本番と同じ URL 体系で確認できます。
+
+### 静的ホスティングサービスに配置する
+
+| サービス | 手順概要 |
+| --- | --- |
+| GitHub Pages | リポジトリを GitHub に push → Repository Settings → Pages で `main` ブランチを公開。必要に応じて `docs/` フォルダにファイルを置く。 |
+| Vercel / Netlify / Cloudflare Pages | GitHub リポジトリをインポートし、ビルド設定をスキップ（`index.html` をそのまま配信）。デプロイ後は自動で HTTPS 対応の URL が発行され、独自ドメインも設定できます。 |
+| Render (Static Site) | Dashboard → New → Static Site からこのリポジトリを選択し、Build Command を空欄、Publish Directory を `/` に設定してデプロイ。 |
+
+いずれのサービスでも追加の API キーや専用サーバー構築は不要です。MapLibre GL のスタイル（`https://demotiles.maplibre.org/style.json`）は公開 URL を参照しており、無料で利用できます。
+
+### 継続的な記録・ランキングを行いたい場合
+
+- ブラウザ `localStorage` では端末ごとにデータが分かれるため、ユーザー単位の記録を共有したい場合はバックエンドを用意します。Supabase や Firebase、あるいは自前の REST API（例: FastAPI、Next.js API Routes）を用意し、ダイアログ保存時にデータを送信します。
+- Web アプリを PWA 化すると、スマートフォンのホーム画面に追加してネイティブアプリのように利用できます。更に Expo（React Native）や Capacitor を使えば App Store / Google Play への配信も可能です。
+
+まずは静的ホスティングで「HP」として公開し、必要に応じてバックエンドや認証を追加する流れが最も手軽です。
+
 ## データ更新とマップタイル
 
 - 世界データと都道府県のメタデータは `scripts/` 配下の Python スクリプトで生成しています。
