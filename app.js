@@ -211,6 +211,51 @@ function renderScoreBadgeElement(element, score, { compact = false } = {}) {
   }
 }
 
+function configureScoreMeterElement(element, score, { compact = false, showLabels = false } = {}) {
+  if (!element) return;
+  element.classList.add('score-meter');
+  element.classList.toggle('score-meter-compact', Boolean(compact));
+  element.classList.toggle('score-meter-labeled', Boolean(showLabels));
+  element.innerHTML = '';
+
+  const isFiniteScore = typeof score === 'number' && Number.isFinite(score);
+  const numericScore = isFiniteScore ? score : NaN;
+  const ariaLabel = isFiniteScore ? `スコアメーター：${numericScore} 点` : 'スコアメーター：未設定';
+  element.setAttribute('role', 'img');
+  element.setAttribute('aria-label', ariaLabel);
+
+  for (let value = 10; value >= 0; value -= 1) {
+    const step = document.createElement('span');
+    step.className = 'score-meter-step';
+    step.dataset.score = String(value);
+    step.style.setProperty('--score-meter-color', getScoreColor(value));
+    step.setAttribute('aria-hidden', 'true');
+    const definition = getScoreDefinition(value);
+    const tooltip = definition ? `${value} 点｜${definition.label}` : `${value} 点`;
+    step.setAttribute('title', tooltip);
+    if (showLabels) {
+      const label = document.createElement('span');
+      label.className = 'score-meter-step-label';
+      label.textContent = String(value);
+      step.appendChild(label);
+    }
+    if (isFiniteScore && numericScore === value) {
+      step.classList.add('is-active');
+    }
+    element.appendChild(step);
+  }
+}
+
+function createScoreMeterElement(score, options = {}) {
+  const meter = document.createElement('div');
+  configureScoreMeterElement(meter, score, options);
+  return meter;
+}
+
+function renderScoreMeterElement(element, score, options = {}) {
+  configureScoreMeterElement(element, score, options);
+}
+
 function formatScoreHintText(score, { explicit = false } = {}) {
   if (!Number.isFinite(score)) {
     return 'カテゴリ：未設定';
@@ -224,8 +269,20 @@ function formatScoreHintText(score, { explicit = false } = {}) {
 function renderScoreLegend() {
   if (!scoreLegendContainer) return;
   scoreLegendContainer.innerHTML = '';
-  scoreLegendContainer.setAttribute('role', 'list');
-  const fragment = document.createDocumentFragment();
+  scoreLegendContainer.setAttribute('role', 'group');
+  scoreLegendContainer.setAttribute('aria-label', 'スコア凡例');
+
+  const scaleWrapper = document.createElement('div');
+  scaleWrapper.className = 'score-legend-scale';
+  const scaleMeter = createScoreMeterElement(undefined, { showLabels: true });
+  scaleMeter.classList.add('score-meter-legend');
+  scaleMeter.setAttribute('aria-label', 'スコア配色（10 点 → 0 点）');
+  scaleWrapper.appendChild(scaleMeter);
+  scoreLegendContainer.appendChild(scaleWrapper);
+
+  const listWrapper = document.createElement('div');
+  listWrapper.className = 'score-legend-list';
+  listWrapper.setAttribute('role', 'list');
   SCORE_DEFINITIONS.slice()
     .sort((a, b) => b.score - a.score)
     .forEach((definition) => {
@@ -233,9 +290,9 @@ function renderScoreLegend() {
       badge.className = 'score-chip score-chip-compact';
       badge.setAttribute('role', 'listitem');
       renderScoreBadgeElement(badge, definition.score, { compact: true });
-      fragment.appendChild(badge);
+      listWrapper.appendChild(badge);
     });
-  scoreLegendContainer.appendChild(fragment);
+  scoreLegendContainer.appendChild(listWrapper);
 }
 
 function computeRecommendedScore(metrics) {
@@ -927,10 +984,14 @@ function openMunicipalityCreateDialog() {
 
 function formatScoreCell(dataset, id) {
   const entry = state[dataset][id];
-  if (!entry || typeof entry.score !== 'number') {
-    return '<span class="score-empty">—</span>';
-  }
-  return buildScoreBadgeHTML(entry.score);
+  const score = typeof entry?.score === 'number' && Number.isFinite(entry.score) ? entry.score : undefined;
+  const container = document.createElement('div');
+  container.className = 'score-cell';
+  const badge = document.createElement('span');
+  renderScoreBadgeElement(badge, score, { compact: true });
+  container.appendChild(badge);
+  container.appendChild(createScoreMeterElement(score, { compact: true }));
+  return container.outerHTML;
 }
 
 function openScoreDialog(dataset, id) {
@@ -943,6 +1004,8 @@ function openScoreDialog(dataset, id) {
   const fragment = templates.score.content.cloneNode(true);
   const form = fragment.querySelector('form');
   const recommendedBadge = fragment.querySelector('[data-field="recommended-badge"]');
+  const recommendedMeter = fragment.querySelector('[data-field="recommended-meter"]');
+  const currentMeter = fragment.querySelector('[data-field="current-meter"]');
   const scoreHintField = fragment.querySelector('[data-field="score-hint"]');
   const existing = state[dataset][id] || {};
 
@@ -978,14 +1041,26 @@ function openScoreDialog(dataset, id) {
     }
   };
 
+  const updateManualMeter = () => {
+    if (!currentMeter) return;
+    const manualValue = Number(scoreInput.value);
+    if (Number.isInteger(manualValue) && manualValue >= 0 && manualValue <= 10) {
+      renderScoreMeterElement(currentMeter, manualValue);
+    } else {
+      renderScoreMeterElement(currentMeter, undefined);
+    }
+  };
+
   const updateRecommended = () => {
     const metrics = readMetricsFromForm(form);
     lastRecommended = computeRecommendedScore(metrics);
     renderScoreBadgeElement(recommendedBadge, lastRecommended, { compact: true });
+    renderScoreMeterElement(recommendedMeter, lastRecommended);
     if (!scoreWasEdited) {
       scoreInput.value = lastRecommended;
     }
     updateScoreHint();
+    updateManualMeter();
   };
 
   form.addEventListener('input', (event) => {
@@ -998,6 +1073,7 @@ function openScoreDialog(dataset, id) {
   scoreInput.addEventListener('input', () => {
     scoreWasEdited = scoreInput.value !== '';
     updateScoreHint();
+    updateManualMeter();
   });
 
   updateRecommended();
