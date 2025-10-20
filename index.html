@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>到達指数ダッシュボード</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <h1>世界・日本到達指数ダッシュボード</h1>
+    <p>旅先での滞在状況を入力すると、世界・日本の各地域に対する到達度スコアを 0〜10 点で整理できます。</p>
+  </header>
+
+  <section class="scoring-guide">
+    <div class="scoring-guide-header">
+      <h2>スコアリング要件（旅行接触度）</h2>
+      <div class="scoring-guide-tabs" role="tablist">
+        <button type="button" class="active" data-score-tab="summary" role="tab" aria-controls="scoreTabSummary" aria-selected="true">概要</button>
+        <button type="button" data-score-tab="detail" role="tab" aria-controls="scoreTabDetail" aria-selected="false">詳細</button>
+      </div>
+    </div>
+    <div class="scoring-guide-pane active" id="scoreTabSummary" data-score-pane="summary" role="tabpanel">
+      <div class="score-quick-grid" id="scoreQuickSummary" aria-label="スコア概要"></div>
+      <div class="score-legend" id="scoreLegend" aria-label="スコア凡例"></div>
+    </div>
+    <div class="scoring-guide-pane" id="scoreTabDetail" data-score-pane="detail" role="tabpanel" aria-hidden="true">
+      <table>
+        <thead>
+          <tr><th>点数</th><th>判定基準</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>10</td><td>居住：yearsLived ≥ 2（10 点は yearsLived ≥ 2 のみ）</td></tr>
+          <tr><td>9</td><td>長期滞在：3 ≤ monthsStayed &lt; 24</td></tr>
+          <tr><td>8</td><td>中期滞在：2 ≤ weeksStayed &lt; 12</td></tr>
+          <tr><td>7</td><td>反復宿泊：totalNights ≥ 3</td></tr>
+          <tr><td>6</td><td>宿泊：totalNights ≥ 1</td></tr>
+          <tr><td>5</td><td>反復訪問（日帰り）：dayTripCount ≥ 2 かつ dayTripMinPerVisitHours ≥ 2 または dayTripTotalHours ≥ 6</td></tr>
+          <tr><td>4</td><td>濃厚訪問（日帰り）：maxSingleDayHours ≥ 4</td></tr>
+          <tr><td>3</td><td>訪問（日帰り）：1 ≤ maxSingleDayHours &lt; 4</td></tr>
+          <tr><td>2</td><td>立ち寄り（短時間）：短時間（&lt; 1h）または駅/空港/SA/PA のみ</td></tr>
+          <tr><td>1</td><td>通過（未下車）：鉄道/自動車/船で通過のみ（上空通過は除外）</td></tr>
+          <tr><td>0</td><td>未踏：上記いずれにも該当せず</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <nav class="primary-tabs" role="tablist">
+    <button data-target="world" class="active" role="tab" aria-controls="world" aria-selected="true">世界</button>
+    <button data-target="prefectures" role="tab" aria-controls="prefectures" aria-selected="false">日本の都道府県</button>
+    <button data-target="municipalities" role="tab" aria-controls="municipalities" aria-selected="false">日本の市区町村</button>
+  </nav>
+
+  <main>
+    <section id="world" class="tab-panel active" role="tabpanel">
+      <div class="panel-header">
+        <h2>世界の到達指数</h2>
+        <div class="panel-actions">
+          <button id="resetWorld">リセット</button>
+          <button data-export="world">CSV エクスポート</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="map-container">
+          <div id="worldMap" class="map" aria-label="世界地図"></div>
+        </div>
+        <div class="list-container">
+          <input type="search" id="worldFilter" placeholder="国名を検索" aria-label="国名検索" />
+          <div class="list-wrapper">
+            <table>
+              <thead>
+                <tr><th>地域</th><th>国</th><th>スコア</th></tr>
+              </thead>
+              <tbody id="worldList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="totals-card">
+        <h3>地域別合計点</h3>
+        <table class="totals-table">
+          <thead>
+            <tr><th>地域</th><th>合計点</th><th>入力件数</th></tr>
+          </thead>
+          <tbody id="worldTotals"></tbody>
+          <tfoot id="worldTotalsFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section id="prefectures" class="tab-panel" role="tabpanel">
+      <div class="panel-header">
+        <h2>日本の都道府県 到達指数</h2>
+        <div class="panel-actions">
+          <button id="resetPrefectures">リセット</button>
+          <button data-export="prefectures">CSV エクスポート</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="map-container">
+          <div id="prefectureMap" class="map" aria-label="日本地図（都道府県）"></div>
+        </div>
+        <div class="list-container">
+          <input type="search" id="prefectureFilter" placeholder="都道府県を検索" aria-label="都道府県検索" />
+          <div class="list-wrapper">
+            <table>
+              <thead>
+                <tr><th>地方</th><th>都道府県</th><th>スコア</th></tr>
+              </thead>
+              <tbody id="prefectureList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="totals-card">
+        <h3>地方別合計点</h3>
+        <table class="totals-table">
+          <thead>
+            <tr><th>地方</th><th>合計点</th><th>入力件数</th></tr>
+          </thead>
+          <tbody id="prefectureTotals"></tbody>
+          <tfoot id="prefectureTotalsFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section id="municipalities" class="tab-panel" role="tabpanel">
+      <div class="panel-header">
+        <h2>日本の市区町村 到達指数</h2>
+        <div class="panel-actions">
+          <button id="resetMunicipalities">リセット</button>
+          <button id="importMunicipalities">CSV 取込</button>
+          <input type="file" id="municipalityFile" accept=".csv,.json" hidden />
+          <button data-export="municipalities">CSV エクスポート</button>
+        </div>
+      </div>
+      <div class="panel-body vertical">
+        <div class="map-container">
+          <div id="municipalityMap" class="map" aria-label="日本地図（市区町村）"></div>
+        </div>
+        <div class="municipality-controls">
+          <label>都道府県
+            <select id="municipalityPrefectureFilter"></select>
+          </label>
+          <input type="search" id="municipalityFilter" placeholder="市区町村名を検索" aria-label="市区町村検索" />
+          <button id="addMunicipality">市区町村を追加</button>
+        </div>
+        <div class="list-wrapper">
+          <table>
+            <thead>
+              <tr><th>都道府県</th><th>市区町村</th><th>スコア</th></tr>
+            </thead>
+            <tbody id="municipalityList"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <template id="scoreTemplate">
+    <form class="score-form">
+      <div class="form-grid">
+        <label>yearsLived
+          <input type="number" name="yearsLived" min="0" step="0.1" />
+        </label>
+        <label>monthsStayed
+          <input type="number" name="monthsStayed" min="0" step="0.1" />
+        </label>
+        <label>weeksStayed
+          <input type="number" name="weeksStayed" min="0" step="0.1" />
+        </label>
+        <label>totalNights
+          <input type="number" name="totalNights" min="0" step="1" />
+        </label>
+        <label>dayTripCount
+          <input type="number" name="dayTripCount" min="0" step="1" />
+        </label>
+        <label>dayTripMinPerVisitHours
+          <input type="number" name="dayTripMinPerVisitHours" min="0" step="0.5" />
+        </label>
+        <label>dayTripTotalHours
+          <input type="number" name="dayTripTotalHours" min="0" step="0.5" />
+        </label>
+        <label>maxSingleDayHours
+          <input type="number" name="maxSingleDayHours" min="0" step="0.5" />
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="shortStop" /> 短時間（&lt;1h）/駅・空港のみ
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="transitOnly" /> 通過のみ（未下車）
+        </label>
+      </div>
+      <div class="score-summary">
+        <div class="recommended">
+          推奨スコア：
+          <span class="score-chip score-chip-compact" data-field="recommended-badge" data-score="0">
+            <span class="score-chip-value">0</span>
+            <span class="score-chip-label">未踏</span>
+          </span>
+        </div>
+        <div class="score-meter-group">
+          <div class="score-meter-row">
+            <span class="score-meter-label">推奨</span>
+            <div class="score-meter-shell" data-field="recommended-meter"></div>
+          </div>
+          <div class="score-meter-row">
+            <span class="score-meter-label">現在</span>
+            <div class="score-meter-shell" data-field="current-meter"></div>
+          </div>
+        </div>
+        <label>最終スコア
+          <input type="number" name="score" min="0" max="10" step="1" required />
+        </label>
+        <p class="score-hint" data-field="score-hint">カテゴリ：未設定</p>
+        <label>メモ
+          <textarea name="notes" rows="3" placeholder="滞在内容の補足"></textarea>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit">保存</button>
+        <button type="button" data-action="cancel">キャンセル</button>
+      </div>
+    </form>
+  </template>
+
+  <dialog id="scoreDialog" aria-modal="true"></dialog>
+
+  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
