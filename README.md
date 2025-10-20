@@ -84,7 +84,7 @@ xdg-open http://localhost:8000/index.html # Linux
 #### Render（Static Site）
 
 1. Render にログインし、Dashboard → **New** → **Static Site** を選択します。
-2. GitHub/GitLab リポジトリを接続し、Build Command を空欄、Publish Directory に `/` を指定します。
+2. GitHub/GitLab リポジトリを接続し、Build Command を空欄、Publish Directory に `.`（ピリオド）を指定します。`/` を設定するとビルド時にエラーになるため注意してください。
 3. デプロイが完了すると `https://<your-service>.onrender.com` の URL が発行されます。地図とスコア編集が意図通りに動作するか確認してください。
 
 ### 4. 運用時のポイント
@@ -116,7 +116,7 @@ xdg-open http://localhost:8000/index.html # Linux
 | --- | --- |
 | GitHub Pages | リポジトリを GitHub に push → Repository Settings → Pages で `main` ブランチを公開。必要に応じて `docs/` フォルダにファイルを置く。 |
 | Vercel / Netlify / Cloudflare Pages | GitHub リポジトリをインポートし、ビルド設定をスキップ（`index.html` をそのまま配信）。デプロイ後は自動で HTTPS 対応の URL が発行され、独自ドメインも設定できます。 |
-| Render (Static Site) | Dashboard → New → Static Site からこのリポジトリを選択し、Build Command を空欄、Publish Directory を `/` に設定してデプロイ。 |
+| Render (Static Site) | Dashboard → New → Static Site からこのリポジトリを選択し、Build Command を空欄、Publish Directory を `.`（ルートディレクトリ）に設定してデプロイ。 |
 
 いずれのサービスでも追加の API キーや専用サーバー構築は不要です。MapLibre GL のスタイル（`https://demotiles.maplibre.org/style.json`）は公開 URL を参照しており、無料で利用できます。
 
