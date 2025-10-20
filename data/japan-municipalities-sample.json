@@ -1,0 +1,304 @@
+{
+  "municipalities": [
+    {
+      "code": "01100",
+      "prefecture": "北海道",
+      "name": "札幌市"
+    },
+    {
+      "code": "01202",
+      "prefecture": "北海道",
+      "name": "函館市"
+    },
+    {
+      "code": "01205",
+      "prefecture": "北海道",
+      "name": "旭川市"
+    },
+    {
+      "code": "01208",
+      "prefecture": "北海道",
+      "name": "帯広市"
+    },
+    {
+      "code": "01209",
+      "prefecture": "北海道",
+      "name": "釧路市"
+    },
+    {
+      "code": "02201",
+      "prefecture": "青森県",
+      "name": "青森市"
+    },
+    {
+      "code": "02202",
+      "prefecture": "青森県",
+      "name": "弘前市"
+    },
+    {
+      "code": "03201",
+      "prefecture": "岩手県",
+      "name": "盛岡市"
+    },
+    {
+      "code": "04201",
+      "prefecture": "宮城県",
+      "name": "仙台市"
+    },
+    {
+      "code": "05201",
+      "prefecture": "秋田県",
+      "name": "秋田市"
+    },
+    {
+      "code": "06201",
+      "prefecture": "山形県",
+      "name": "山形市"
+    },
+    {
+      "code": "07201",
+      "prefecture": "福島県",
+      "name": "福島市"
+    },
+    {
+      "code": "08201",
+      "prefecture": "茨城県",
+      "name": "水戸市"
+    },
+    {
+      "code": "09100",
+      "prefecture": "栃木県",
+      "name": "宇都宮市"
+    },
+    {
+      "code": "10201",
+      "prefecture": "群馬県",
+      "name": "前橋市"
+    },
+    {
+      "code": "11100",
+      "prefecture": "埼玉県",
+      "name": "さいたま市"
+    },
+    {
+      "code": "12100",
+      "prefecture": "千葉県",
+      "name": "千葉市"
+    },
+    {
+      "code": "13101",
+      "prefecture": "東京都",
+      "name": "千代田区"
+    },
+    {
+      "code": "13102",
+      "prefecture": "東京都",
+      "name": "中央区"
+    },
+    {
+      "code": "13103",
+      "prefecture": "東京都",
+      "name": "港区"
+    },
+    {
+      "code": "13104",
+      "prefecture": "東京都",
+      "name": "新宿区"
+    },
+    {
+      "code": "13113",
+      "prefecture": "東京都",
+      "name": "渋谷区"
+    },
+    {
+      "code": "14100",
+      "prefecture": "神奈川県",
+      "name": "横浜市"
+    },
+    {
+      "code": "14130",
+      "prefecture": "神奈川県",
+      "name": "川崎市"
+    },
+    {
+      "code": "14150",
+      "prefecture": "神奈川県",
+      "name": "相模原市"
+    },
+    {
+      "code": "15100",
+      "prefecture": "新潟県",
+      "name": "新潟市"
+    },
+    {
+      "code": "16201",
+      "prefecture": "富山県",
+      "name": "富山市"
+    },
+    {
+      "code": "17201",
+      "prefecture": "石川県",
+      "name": "金沢市"
+    },
+    {
+      "code": "18201",
+      "prefecture": "福井県",
+      "name": "福井市"
+    },
+    {
+      "code": "19201",
+      "prefecture": "山梨県",
+      "name": "甲府市"
+    },
+    {
+      "code": "20201",
+      "prefecture": "長野県",
+      "name": "長野市"
+    },
+    {
+      "code": "21201",
+      "prefecture": "岐阜県",
+      "name": "岐阜市"
+    },
+    {
+      "code": "22100",
+      "prefecture": "静岡県",
+      "name": "静岡市"
+    },
+    {
+      "code": "22130",
+      "prefecture": "静岡県",
+      "name": "浜松市"
+    },
+    {
+      "code": "23100",
+      "prefecture": "愛知県",
+      "name": "名古屋市"
+    },
+    {
+      "code": "24101",
+      "prefecture": "三重県",
+      "name": "津市"
+    },
+    {
+      "code": "25201",
+      "prefecture": "滋賀県",
+      "name": "大津市"
+    },
+    {
+      "code": "26100",
+      "prefecture": "京都府",
+      "name": "京都市"
+    },
+    {
+      "code": "27100",
+      "prefecture": "大阪府",
+      "name": "大阪市"
+    },
+    {
+      "code": "28100",
+      "prefecture": "兵庫県",
+      "name": "神戸市"
+    },
+    {
+      "code": "29201",
+      "prefecture": "奈良県",
+      "name": "奈良市"
+    },
+    {
+      "code": "30201",
+      "prefecture": "和歌山県",
+      "name": "和歌山市"
+    },
+    {
+      "code": "31201",
+      "prefecture": "鳥取県",
+      "name": "鳥取市"
+    },
+    {
+      "code": "32201",
+      "prefecture": "島根県",
+      "name": "松江市"
+    },
+    {
+      "code": "33100",
+      "prefecture": "岡山県",
+      "name": "岡山市"
+    },
+    {
+      "code": "34100",
+      "prefecture": "広島県",
+      "name": "広島市"
+    },
+    {
+      "code": "35201",
+      "prefecture": "山口県",
+      "name": "山口市"
+    },
+    {
+      "code": "36201",
+      "prefecture": "徳島県",
+      "name": "徳島市"
+    },
+    {
+      "code": "37201",
+      "prefecture": "香川県",
+      "name": "高松市"
+    },
+    {
+      "code": "38201",
+      "prefecture": "愛媛県",
+      "name": "松山市"
+    },
+    {
+      "code": "39201",
+      "prefecture": "高知県",
+      "name": "高知市"
+    },
+    {
+      "code": "40130",
+      "prefecture": "福岡県",
+      "name": "北九州市"
+    },
+    {
+      "code": "40131",
+      "prefecture": "福岡県",
+      "name": "福岡市"
+    },
+    {
+      "code": "41201",
+      "prefecture": "佐賀県",
+      "name": "佐賀市"
+    },
+    {
+      "code": "42201",
+      "prefecture": "長崎県",
+      "name": "長崎市"
+    },
+    {
+      "code": "43100",
+      "prefecture": "熊本県",
+      "name": "熊本市"
+    },
+    {
+      "code": "44201",
+      "prefecture": "大分県",
+      "name": "大分市"
+    },
+    {
+      "code": "45201",
+      "prefecture": "宮崎県",
+      "name": "宮崎市"
+    },
+    {
+      "code": "46201",
+      "prefecture": "鹿児島県",
+      "name": "鹿児島市"
+    },
+    {
+      "code": "47201",
+      "prefecture": "沖縄県",
+      "name": "那覇市"
+    }
+  ]
+}
